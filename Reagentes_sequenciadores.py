@@ -4,6 +4,7 @@ from io import BytesIO
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 import os
+import tempfile
 
 # Função para carregar os dados do CSV ou criar um novo
 def load_data(equipment):
@@ -91,11 +92,13 @@ st.subheader("📄 Exportar Relatório em PDF")
 
 def generate_pdf(dataframe, equipment_name, fig):
     try:
+        # Criar o PDF
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", "B", 16)
         pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
         
+        # Adicionar a tabela
         pdf.ln(10)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(90, 10, "Kit", 1, 0, "C")
@@ -108,12 +111,16 @@ def generate_pdf(dataframe, equipment_name, fig):
             pdf.cell(90, 10, kit, 1, 0, "L")
             pdf.cell(40, 10, str(quantidade), 1, 1, "C")
         
-        pdf.ln(10)
-        img_buffer = BytesIO()
-        fig.savefig(img_buffer, format='png')
-        img_buffer.seek(0)
-        pdf.image(img_buffer, x=10, y=pdf.get_y() + 10, w=190)
+        # Salvar gráfico em arquivo temporário
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
+            fig.savefig(temp_file, format="png")
+            temp_file.close()  # Fecha o arquivo para garantir que o FPDF possa usá-lo
         
+            # Adicionar imagem do gráfico ao PDF
+            pdf.ln(10)
+            pdf.image(temp_file.name, x=10, y=pdf.get_y() + 10, w=190)
+        
+        # Gerar o buffer de saída do PDF
         buffer = BytesIO()
         pdf.output(buffer)
         buffer.seek(0)
@@ -128,5 +135,3 @@ if st.button("Baixar PDF"):
         st.download_button(
             "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
         )
-
-
