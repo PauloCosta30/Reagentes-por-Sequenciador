@@ -121,14 +121,12 @@ def generate_pdf(dataframe, equipment_name, fig):
             pdf.image(temp_file.name, x=10, y=pdf.get_y() + 10, w=190)
         
         # Gerar o buffer de saída do PDF
-        buffer = BytesIO()
-        pdf.output(buffer)
-        buffer.seek(0)
+        pdf_output = pdf.output(dest='S').encode('latin1')  # Gera o PDF no formato de bytes
         
         # Remover arquivo temporário
         os.remove(temp_file.name)
         
-        return buffer
+        return BytesIO(pdf_output)
     except Exception as e:
         st.error(f"Ocorreu um erro ao gerar o PDF: {e}")
         return None
