@@ -8,8 +8,8 @@ import tempfile
 
 # Lista inicial de reagentes para cada equipamento
 reagents_dict = {
-    "Illumina": ["P1 300", "P1 600", "P2 200", "P2 300", "P2 600", "P3 200", "P3 300", "P4 200", "P4 300", "Next500"],
-    "PacBio": ["SMRT Cell 8M", "Sequel II Binding Kit 3.2", "Sequencing II Sequencing Kit 2.0", " Smrtbell Prep Kit 3.0"]
+    "Illumina": ["P1 300", "P1 600", "P2 200", "P2 300", "P2 600", "P3 200", "P3 300", "P4 200", "P4 300"],
+    "PacBio": ["SMRT Cell 8M", "Sequel II Binding Kit 3.2", "Sequencing II Sequencing Kit 2.0", "Smrtbell Prep Kit 3.0"]
 }
 
 # Função para carregar os dados do CSV ou criar um novo
@@ -76,14 +76,14 @@ if st.button("Adicionar Unidades"):
 # Gráfico de barras para visualização
 st.subheader(f"📈 Gráfico de Quantidade por Kit - {selected_equipment}")
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(stocks["Kit"], stocks["Quantidade"], color='skyblue')
+ax.bar(stocks["Kit"], stocks["Quantidade"], color=['#FFC1C1', '#FFD700', '#C1FFC1', '#87CEFA', '#FFA07A', '#9370DB', '#C0C0C0'])
 ax.set_title(f"Quantidade de Reagentes por Kit - {selected_equipment}")
 ax.set_xlabel("Kit")
 ax.set_ylabel("Quantidade")
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# Função para gerar o PDF
+# Função para gerar o PDF com cores refinadas
 def generate_pdf(dataframe, equipment_name, fig):
     try:
         pdf = FPDF()
@@ -97,11 +97,16 @@ def generate_pdf(dataframe, equipment_name, fig):
         pdf.cell(40, 10, "Quantidade", 1, 1, "C")
         
         pdf.set_font("Arial", size=12)
+        colors = [(255, 193, 193), (255, 215, 0), (193, 255, 193), (135, 206, 250), (255, 160, 122), (147, 112, 219), (192, 192, 192)]
+        
         for i in range(len(dataframe)):
             kit = dataframe.loc[i, "Kit"]
             quantidade = dataframe.loc[i, "Quantidade"]
-            pdf.cell(90, 10, kit, 1, 0, "L")
-            pdf.cell(40, 10, str(quantidade), 1, 1, "C")
+            color = colors[i % len(colors)]
+            
+            pdf.set_fill_color(*color)
+            pdf.cell(90, 10, kit, 1, 0, "L", fill=True)
+            pdf.cell(40, 10, str(quantidade), 1, 1, "C", fill=True)
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
             fig.savefig(temp_file, format="png")
