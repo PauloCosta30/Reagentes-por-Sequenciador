@@ -42,14 +42,18 @@ selected_kit = st.selectbox("Selecione o kit", stocks["Kit"].tolist())
 amount_to_deduct = st.number_input("Quantidade a dar baixa", min_value=1, step=1)
 
 if st.button("Dar Baixa"):
-    index = stocks[stocks["Kit"] == selected_kit].index[0]
-    if stocks.loc[index, "Quantidade"] >= amount_to_deduct:
-        stocks.loc[index, "Quantidade"] -= amount_to_deduct
-        save_data(selected_equipment, stocks)
-        st.success(f"{amount_to_deduct} unidades removidas do kit {selected_kit}.")
-    else:
-        st.error(f"Quantidade insuficiente no kit {selected_kit}.")
-    stocks = load_data(selected_equipment)  # Atualiza a tabela imediatamente
+    try:
+        index = stocks[stocks["Kit"] == selected_kit].index[0]
+        if stocks.loc[index, "Quantidade"] >= amount_to_deduct:
+            stocks.loc[index, "Quantidade"] -= amount_to_deduct
+            save_data(selected_equipment, stocks)
+            st.success(f"{amount_to_deduct} unidades removidas do kit {selected_kit}.")
+        else:
+            st.error(f"Quantidade insuficiente no kit {selected_kit}.")
+    except Exception as e:
+        st.error(f"Ocorreu um erro ao dar baixa: {e}")
+    # Recarregar os dados após modificação
+    stocks = load_data(selected_equipment)
 
 # Mostrar o total de reagentes
 st.subheader("📊 Total de Reagentes")
@@ -62,11 +66,15 @@ selected_kit_update = st.selectbox("Selecione o kit para adicionar unidades", st
 units_to_add = st.number_input("Quantidade a adicionar", min_value=1, step=1, key="add")
 
 if st.button("Adicionar Unidades"):
-    index_update = stocks[stocks["Kit"] == selected_kit_update].index[0]
-    stocks.loc[index_update, "Quantidade"] += units_to_add
-    save_data(selected_equipment, stocks)
-    st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
-    stocks = load_data(selected_equipment)  # Atualiza a tabela imediatamente
+    try:
+        index_update = stocks[stocks["Kit"] == selected_kit_update].index[0]
+        stocks.loc[index_update, "Quantidade"] += units_to_add
+        save_data(selected_equipment, stocks)
+        st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
+    except Exception as e:
+        st.error(f"Ocorreu um erro ao adicionar unidades: {e}")
+    # Recarregar os dados após modificação
+    stocks = load_data(selected_equipment)
 
 # Gráfico de barras para visualização
 st.subheader(f"📈 Gráfico de Quantidade por Kit - {selected_equipment}")
@@ -82,38 +90,43 @@ st.pyplot(fig)
 st.subheader("📄 Exportar Relatório em PDF")
 
 def generate_pdf(dataframe, equipment_name, fig):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
-    
-    pdf.ln(10)
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(90, 10, "Kit", 1, 0, "C")
-    pdf.cell(40, 10, "Quantidade", 1, 1, "C")
-    
-    pdf.set_font("Arial", size=12)
-    for i in range(len(dataframe)):
-        kit = dataframe.loc[i, "Kit"]
-        quantidade = dataframe.loc[i, "Quantidade"]
-        pdf.cell(90, 10, kit, 1, 0, "L")
-        pdf.cell(40, 10, str(quantidade), 1, 1, "C")
-    
-    pdf.ln(10)
-    img_buffer = BytesIO()
-    fig.savefig(img_buffer, format='png')
-    img_buffer.seek(0)
-    pdf.image(img_buffer, x=10, y=pdf.get_y() + 10, w=190)
-    
-    buffer = BytesIO()
-    pdf.output(buffer)
-    buffer.seek(0)
-    return buffer
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
+        
+        pdf.ln(10)
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(90, 10, "Kit", 1, 0, "C")
+        pdf.cell(40, 10, "Quantidade", 1, 1, "C")
+        
+        pdf.set_font("Arial", size=12)
+        for i in range(len(dataframe)):
+            kit = dataframe.loc[i, "Kit"]
+            quantidade = dataframe.loc[i, "Quantidade"]
+            pdf.cell(90, 10, kit, 1, 0, "L")
+            pdf.cell(40, 10, str(quantidade), 1, 1, "C")
+        
+        pdf.ln(10)
+        img_buffer = BytesIO()
+        fig.savefig(img_buffer, format='png')
+        img_buffer.seek(0)
+        pdf.image(img_buffer, x=10, y=pdf.get_y() + 10, w=190)
+        
+        buffer = BytesIO()
+        pdf.output(buffer)
+        buffer.seek(0)
+        return buffer
+    except Exception as e:
+        st.error(f"Ocorreu um erro ao gerar o PDF: {e}")
+        return None
 
 if st.button("Baixar PDF"):
     pdf_data = generate_pdf(stocks, selected_equipment, fig)
-    st.download_button(
-        "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
-    )
+    if pdf_data:
+        st.download_button(
+            "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
+        )
 
 
