@@ -9,7 +9,7 @@ import tempfile
 # Lista inicial de reagentes para cada equipamento
 reagents_dict = {
     "Illumina": ["P1 300", "P1 600", "P2 200", "P2 300", "P2 600", "P3 200", "P3 300", "P4 200", "P4 300", "Next500"],
-    "PacBio": ["SMRT Cell 8M", "Sequel II Binding Kit 3.2", "Sequel II sequencing Kit 2.0", "DNA Prep Kit 3.0"]
+    "PacBio": ["SMRT Cell 8M", "Sequel Binding Kit", "Sequencing Primer", "Clean-up Beads", "MagBeads", "DNA Prep Kit"]
 }
 
 # Função para carregar os dados do CSV ou criar um novo
@@ -33,9 +33,15 @@ selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBi
 # Carregar os dados do equipamento selecionado
 stocks = load_data(selected_equipment)
 
-# Mostrar o estoque atual
+# Mostrar o estoque atual com estilo melhorado
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
-st.dataframe(stocks, height=1000)
+styled_table = stocks.style.set_properties(**{
+    'font-size': '14px',
+    'white-space': 'nowrap',
+    'text-align': 'center',
+}).hide_index()
+
+st.dataframe(styled_table, use_container_width=True, height=300)
 
 # Formulário para dar baixa nos reagentes
 st.subheader(f"➖ Dar Baixa em Reagentes - {selected_equipment}")
@@ -53,8 +59,9 @@ if st.button("Dar Baixa"):
             st.error(f"Quantidade insuficiente no kit {selected_kit}.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao dar baixa: {e}")
-    # Recarregar os dados após modificação
-    stocks = load_data(selected_equipment)
+
+# Recarregar os dados após modificação
+stocks = load_data(selected_equipment)
 
 # Mostrar o total de reagentes
 st.subheader("📊 Total de Reagentes")
@@ -74,8 +81,6 @@ if st.button("Adicionar Unidades"):
         st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao adicionar unidades: {e}")
-    # Recarregar os dados após modificação
-    stocks = load_data(selected_equipment)
 
 # Gráfico de barras para visualização
 st.subheader(f"📈 Gráfico de Quantidade por Kit - {selected_equipment}")
@@ -87,34 +92,27 @@ ax.set_ylabel("Quantidade")
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# Função para gerar o PDF com cores de fundo diferentes para cada kit
+# Função para gerar o PDF com cores de fundo para cada kit
 def generate_pdf(dataframe, equipment_name, fig):
     try:
-        # Criar o PDF
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", "B", 16)
         pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
         
-        # Definir cores diferentes para cada kit
         colors = {
-            "P1 300": [255, 230, 230],  # Vermelho claro
-            "P1 600": [230, 255, 230],  # Verde claro
-            "P2 200": [230, 230, 255],  # Azul claro
-            "P2 300": [255, 255, 230],  # Amarelo claro
-            "P2 600": [255, 230, 255],  # Rosa claro
-            "P3 200": [230, 255, 255],  # Ciano claro
-            "P3 300": [255, 255, 255],  # Branco
-            "P4 200": [240, 240, 240],  # Cinza claro
-            "P4 300": [255, 240, 240],  # Vermelho rosado
-            "Next500": [240, 255, 240], # Verde limão
-            "SMRT Cell 8M": [200, 255, 255],  # Azul suave
-            "Sequel II Binding Kit 2.0": [255, 255, 200], # Amarelo suave
-            "Sequencing II Binding Kit 3.2": [255, 220, 220], # Coral claro
-            "DNA Prep Kit 3.0": [255, 255, 255],  # Branco
+            "P1 300": [255, 230, 230],
+            "P1 600": [230, 255, 230],
+            "P2 200": [230, 230, 255],
+            "P2 300": [255, 255, 230],
+            "P2 600": [255, 230, 255],
+            "P3 200": [230, 255, 255],
+            "P3 300": [255, 255, 255],
+            "P4 200": [240, 240, 240],
+            "P4 300": [255, 240, 240],
+            "Next500": [240, 255, 240],
         }
 
-        # Adicionar a tabela com cores de fundo
         pdf.ln(10)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(90, 10, "Kit", 1, 0, "C")
@@ -124,24 +122,18 @@ def generate_pdf(dataframe, equipment_name, fig):
         for i in range(len(dataframe)):
             kit = dataframe.loc[i, "Kit"]
             quantidade = dataframe.loc[i, "Quantidade"]
-            color = colors.get(kit, [255, 255, 255])  # Cor padrão se o kit não estiver no dicionário
+            color = colors.get(kit, [255, 255, 255])
             pdf.set_fill_color(*color)
             pdf.cell(90, 10, kit, 1, 0, "L", fill=True)
             pdf.cell(40, 10, str(quantidade), 1, 1, "C", fill=True)
         
-        # Salvar gráfico em arquivo temporário
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
             fig.savefig(temp_file, format="png")
-            temp_file.close()  # Fecha o arquivo para garantir que o FPDF possa usá-lo
-        
-            # Adicionar imagem do gráfico ao PDF
+            temp_file.close()
             pdf.ln(10)
             pdf.image(temp_file.name, x=10, y=pdf.get_y() + 10, w=190)
         
-        # Gerar o buffer de saída do PDF
-        pdf_output = pdf.output(dest='S').encode('latin1')  # Gera o PDF no formato de bytes
-        
-        # Remover arquivo temporário
+        pdf_output = pdf.output(dest='S').encode('latin1')
         os.remove(temp_file.name)
         
         return BytesIO(pdf_output)
@@ -155,4 +147,3 @@ if st.button("Baixar PDF"):
         st.download_button(
             "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
         )
-
