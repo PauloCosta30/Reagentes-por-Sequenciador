@@ -6,6 +6,12 @@ import matplotlib.pyplot as plt
 import os
 import tempfile
 
+# Lista inicial de reagentes para cada equipamento
+reagents_dict = {
+    "Illumina": ["P1 300", "P1 600", "P2 200", "P2 300", "P2 600", "P3 200", "P3 300", "P4 200", "P4 300", "Next500"],
+    "PacBio": ["SMRT Cell 8M", "Sequel Binding Kit", "Sequencing Primer", "Clean-up Beads", "MagBeads", "DNA Prep Kit"]
+}
+
 # Função para carregar os dados do CSV ou criar um novo
 def load_data(equipment):
     file_name = f"{equipment}_reagents.csv"
@@ -18,12 +24,6 @@ def load_data(equipment):
 def save_data(equipment, dataframe):
     file_name = f"{equipment}_reagents.csv"
     dataframe.to_csv(file_name, index=False)
-
-# Lista inicial de reagentes para cada equipamento
-reagents_dict = {
-    "Illumina": ["P1 300", "P1 600", "P2 200", "P2 300", "P2 600", "P3 200", "P3 300", "P4 200", "P4 300", "Next500"],
-    "PacBio": ["SMRT Cell 8M", "Sequel Binding Kit", "Sequencing Primer", "Clean-up Beads", "MagBeads", "DNA Prep Kit"]
-}
 
 st.title("📊 Controle de Reagentes por Equipamento")
 
@@ -87,9 +87,7 @@ ax.set_ylabel("Quantidade")
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# Exportar tabela e gráfico para PDF (layout simples)
-st.subheader("📄 Exportar Relatório em PDF")
-
+# Função para gerar o PDF com cores de fundo diferentes para cada kit
 def generate_pdf(dataframe, equipment_name, fig):
     try:
         # Criar o PDF
@@ -98,7 +96,27 @@ def generate_pdf(dataframe, equipment_name, fig):
         pdf.set_font("Arial", "B", 16)
         pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
         
-        # Adicionar a tabela
+        # Definir cores diferentes para cada kit
+        colors = {
+            "P1 300": [255, 230, 230],  # Vermelho claro
+            "P1 600": [230, 255, 230],  # Verde claro
+            "P2 200": [230, 230, 255],  # Azul claro
+            "P2 300": [255, 255, 230],  # Amarelo claro
+            "P2 600": [255, 230, 255],  # Rosa claro
+            "P3 200": [230, 255, 255],  # Ciano claro
+            "P3 300": [255, 255, 255],  # Branco
+            "P4 200": [240, 240, 240],  # Cinza claro
+            "P4 300": [255, 240, 240],  # Vermelho rosado
+            "Next500": [240, 255, 240], # Verde limão
+            "SMRT Cell 8M": [200, 255, 255],  # Azul suave
+            "Sequel Binding Kit": [255, 255, 200], # Amarelo suave
+            "Sequencing Primer": [255, 220, 220], # Coral claro
+            "Clean-up Beads": [220, 220, 255], # Lavanda
+            "MagBeads": [200, 255, 200],  # Verde claro
+            "DNA Prep Kit": [255, 255, 255],  # Branco
+        }
+
+        # Adicionar a tabela com cores de fundo
         pdf.ln(10)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(90, 10, "Kit", 1, 0, "C")
@@ -108,8 +126,10 @@ def generate_pdf(dataframe, equipment_name, fig):
         for i in range(len(dataframe)):
             kit = dataframe.loc[i, "Kit"]
             quantidade = dataframe.loc[i, "Quantidade"]
-            pdf.cell(90, 10, kit, 1, 0, "L")
-            pdf.cell(40, 10, str(quantidade), 1, 1, "C")
+            color = colors.get(kit, [255, 255, 255])  # Cor padrão se o kit não estiver no dicionário
+            pdf.set_fill_color(*color)
+            pdf.cell(90, 10, kit, 1, 0, "L", fill=True)
+            pdf.cell(40, 10, str(quantidade), 1, 1, "C", fill=True)
         
         # Salvar gráfico em arquivo temporário
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
