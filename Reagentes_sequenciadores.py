@@ -109,11 +109,9 @@ def generate_pdf(dataframe, equipment_name, fig):
             "P4 300": [255, 240, 240],  # Vermelho rosado
             "Next500": [240, 255, 240], # Verde limão
             "SMRT Cell 8M": [200, 255, 255],  # Azul suave
-            "Sequel Binding Kit": [255, 255, 200], # Amarelo suave
-            "Sequencing Primer": [255, 220, 220], # Coral claro
-            "Clean-up Beads": [220, 220, 255], # Lavanda
-            "MagBeads": [200, 255, 200],  # Verde claro
-            "DNA Prep Kit": [255, 255, 255],  # Branco
+            "Sequel II Binding Kit 2.0": [255, 255, 200], # Amarelo suave
+            "Sequencing II Binding Kit 3.2": [255, 220, 220], # Coral claro
+            "DNA Prep Kit 3.0": [255, 255, 255],  # Branco
         }
 
         # Adicionar a tabela com cores de fundo
