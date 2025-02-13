@@ -32,10 +32,9 @@ selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBi
 # Carregar os dados do equipamento selecionado
 stocks = load_data(selected_equipment)
 
-# Mostrar o estoque atual com formatação aprimorada
+# Mostrar o estoque atual
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
-styled_stocks = stocks.style.background_gradient(subset=["Quantidade"], cmap="YlGnBu").format({"Quantidade": "{:.0f}"})
-st.dataframe(styled_stocks, height=300)
+st.dataframe(stocks, height=300)
 
 # Formulário para dar baixa nos reagentes
 st.subheader(f"➖ Dar Baixa em Reagentes - {selected_equipment}")
@@ -50,7 +49,7 @@ if st.button("Dar Baixa"):
         st.success(f"{amount_to_deduct} unidades removidas do kit {selected_kit}.")
     else:
         st.error(f"Quantidade insuficiente no kit {selected_kit}.")
-    stocks = load_data(selected_equipment)  # Atualizar tabela após modificação
+    stocks = load_data(selected_equipment)  # Atualiza a tabela imediatamente
 
 # Mostrar o total de reagentes
 st.subheader("📊 Total de Reagentes")
@@ -67,7 +66,7 @@ if st.button("Adicionar Unidades"):
     stocks.loc[index_update, "Quantidade"] += units_to_add
     save_data(selected_equipment, stocks)
     st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
-    stocks = load_data(selected_equipment)  # Atualizar tabela após modificação
+    stocks = load_data(selected_equipment)  # Atualiza a tabela imediatamente
 
 # Gráfico de barras para visualização
 st.subheader(f"📈 Gráfico de Quantidade por Kit - {selected_equipment}")
@@ -79,32 +78,26 @@ ax.set_ylabel("Quantidade")
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# Exportar tabela e gráfico para PDF
+# Exportar tabela e gráfico para PDF (layout simples)
 st.subheader("📄 Exportar Relatório em PDF")
 
 def generate_pdf(dataframe, equipment_name, fig):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
-    pdf.set_text_color(0, 0, 128)
     pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
     
     pdf.ln(10)
     pdf.set_font("Arial", "B", 12)
-    pdf.set_fill_color(200, 200, 200)
-    pdf.cell(90, 10, "Kit", 1, 0, "C", True)
-    pdf.cell(40, 10, "Quantidade", 1, 1, "C", True)
+    pdf.cell(90, 10, "Kit", 1, 0, "C")
+    pdf.cell(40, 10, "Quantidade", 1, 1, "C")
     
     pdf.set_font("Arial", size=12)
-    colors = [(255, 230, 230), (230, 255, 230), (230, 230, 255), (255, 255, 200)]
-    
     for i in range(len(dataframe)):
         kit = dataframe.loc[i, "Kit"]
         quantidade = dataframe.loc[i, "Quantidade"]
-        color = colors[i % len(colors)]
-        pdf.set_fill_color(*color)
-        pdf.cell(90, 10, kit, 1, 0, "L", True)
-        pdf.cell(40, 10, str(quantidade), 1, 1, "C", True)
+        pdf.cell(90, 10, kit, 1, 0, "L")
+        pdf.cell(40, 10, str(quantidade), 1, 1, "C")
     
     pdf.ln(10)
     img_buffer = BytesIO()
@@ -122,4 +115,5 @@ if st.button("Baixar PDF"):
     st.download_button(
         "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
     )
+
 
