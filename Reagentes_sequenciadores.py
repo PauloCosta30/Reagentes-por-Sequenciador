@@ -35,7 +35,7 @@ stocks = load_data(selected_equipment)
 
 # Mostrar o estoque atual
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
-st.dataframe(stocks, height=600)
+st.dataframe(stocks, height=1000)
 
 # Formulário para dar baixa nos reagentes
 st.subheader(f"➖ Dar Baixa em Reagentes - {selected_equipment}")
