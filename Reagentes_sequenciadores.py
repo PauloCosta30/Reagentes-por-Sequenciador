@@ -35,13 +35,7 @@ stocks = load_data(selected_equipment)
 
 # Mostrar o estoque atual com estilo melhorado
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
-styled_table = stocks.style.set_properties(**{
-    'font-size': '14px',
-    'white-space': 'nowrap',
-    'text-align': 'center',
-}).hide_index()
-
-st.dataframe(styled_table, use_container_width=True, height=300)
+st.dataframe(stocks, use_container_width=True, height=300)
 
 # Formulário para dar baixa nos reagentes
 st.subheader(f"➖ Dar Baixa em Reagentes - {selected_equipment}")
@@ -59,9 +53,6 @@ if st.button("Dar Baixa"):
             st.error(f"Quantidade insuficiente no kit {selected_kit}.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao dar baixa: {e}")
-
-# Recarregar os dados após modificação
-stocks = load_data(selected_equipment)
 
 # Mostrar o total de reagentes
 st.subheader("📊 Total de Reagentes")
@@ -92,7 +83,7 @@ ax.set_ylabel("Quantidade")
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
-# Função para gerar o PDF com cores de fundo para cada kit
+# Função para gerar o PDF
 def generate_pdf(dataframe, equipment_name, fig):
     try:
         pdf = FPDF()
@@ -100,19 +91,6 @@ def generate_pdf(dataframe, equipment_name, fig):
         pdf.set_font("Arial", "B", 16)
         pdf.cell(200, 10, txt=f"Relatório de Reagentes - {equipment_name}", ln=True, align="C")
         
-        colors = {
-            "P1 300": [255, 230, 230],
-            "P1 600": [230, 255, 230],
-            "P2 200": [230, 230, 255],
-            "P2 300": [255, 255, 230],
-            "P2 600": [255, 230, 255],
-            "P3 200": [230, 255, 255],
-            "P3 300": [255, 255, 255],
-            "P4 200": [240, 240, 240],
-            "P4 300": [255, 240, 240],
-            "Next500": [240, 255, 240],
-        }
-
         pdf.ln(10)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(90, 10, "Kit", 1, 0, "C")
@@ -122,16 +100,14 @@ def generate_pdf(dataframe, equipment_name, fig):
         for i in range(len(dataframe)):
             kit = dataframe.loc[i, "Kit"]
             quantidade = dataframe.loc[i, "Quantidade"]
-            color = colors.get(kit, [255, 255, 255])
-            pdf.set_fill_color(*color)
-            pdf.cell(90, 10, kit, 1, 0, "L", fill=True)
-            pdf.cell(40, 10, str(quantidade), 1, 1, "C", fill=True)
+            pdf.cell(90, 10, kit, 1, 0, "L")
+            pdf.cell(40, 10, str(quantidade), 1, 1, "C")
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
             fig.savefig(temp_file, format="png")
             temp_file.close()
-            pdf.ln(10)
-            pdf.image(temp_file.name, x=10, y=pdf.get_y() + 10, w=190)
+            pdf.add_page()
+            pdf.image(temp_file.name, x=10, y=20, w=190)
         
         pdf_output = pdf.output(dest='S').encode('latin1')
         os.remove(temp_file.name)
