@@ -124,6 +124,10 @@ def generate_pdf(dataframe, equipment_name, fig):
         buffer = BytesIO()
         pdf.output(buffer)
         buffer.seek(0)
+        
+        # Remover arquivo temporário
+        os.remove(temp_file.name)
+        
         return buffer
     except Exception as e:
         st.error(f"Ocorreu um erro ao gerar o PDF: {e}")
@@ -135,3 +139,4 @@ if st.button("Baixar PDF"):
         st.download_button(
             "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
         )
+
