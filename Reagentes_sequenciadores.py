@@ -24,7 +24,7 @@ reagents_dict = {
     "PacBio": ["SMRT Cell 8M", "Sequel Binding Kit", "Sequencing Primer", "Clean-up Beads", "MagBeads", "DNA Prep Kit"]
 }
 
-st.title("Controle de Reagentes por Equipamento")
+st.title("📊 Controle de Reagentes por Equipamento")
 
 # Seleção do equipamento
 selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBio"])
@@ -32,12 +32,13 @@ selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBi
 # Carregar os dados do equipamento selecionado
 stocks = load_data(selected_equipment)
 
-# Mostrar o estoque atual
-st.subheader(f"Estoque Atual - {selected_equipment}")
-st.dataframe(stocks)
+# Mostrar o estoque atual com formatação aprimorada
+st.subheader(f"📦 Estoque Atual - {selected_equipment}")
+styled_stocks = stocks.style.background_gradient(subset=["Quantidade"], cmap="YlGnBu").format({"Quantidade": "{:.0f}"})
+st.dataframe(styled_stocks, height=300)
 
 # Formulário para dar baixa nos reagentes
-st.subheader(f"Dar Baixa em Reagentes - {selected_equipment}")
+st.subheader(f"➖ Dar Baixa em Reagentes - {selected_equipment}")
 selected_kit = st.selectbox("Selecione o kit", stocks["Kit"].tolist())
 amount_to_deduct = st.number_input("Quantidade a dar baixa", min_value=1, step=1)
 
@@ -49,14 +50,15 @@ if st.button("Dar Baixa"):
         st.success(f"{amount_to_deduct} unidades removidas do kit {selected_kit}.")
     else:
         st.error(f"Quantidade insuficiente no kit {selected_kit}.")
+    stocks = load_data(selected_equipment)  # Atualizar tabela após modificação
 
 # Mostrar o total de reagentes
-st.subheader("Total de Reagentes")
+st.subheader("📊 Total de Reagentes")
 total_reagents = stocks["Quantidade"].sum()
-st.write(f"Quantidade total de reagentes para {selected_equipment}: {total_reagents}")
+st.metric(label=f"Quantidade total de reagentes para {selected_equipment}", value=total_reagents)
 
 # Permitir adicionar unidades manualmente
-st.subheader(f"Adicionar Unidades - {selected_equipment}")
+st.subheader(f"➕ Adicionar Unidades - {selected_equipment}")
 selected_kit_update = st.selectbox("Selecione o kit para adicionar unidades", stocks["Kit"].tolist(), key="update")
 units_to_add = st.number_input("Quantidade a adicionar", min_value=1, step=1, key="add")
 
@@ -65,10 +67,11 @@ if st.button("Adicionar Unidades"):
     stocks.loc[index_update, "Quantidade"] += units_to_add
     save_data(selected_equipment, stocks)
     st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
+    stocks = load_data(selected_equipment)  # Atualizar tabela após modificação
 
 # Gráfico de barras para visualização
-st.subheader(f"Gráfico de Quantidade por Kit - {selected_equipment}")
-fig, ax = plt.subplots()
+st.subheader(f"📈 Gráfico de Quantidade por Kit - {selected_equipment}")
+fig, ax = plt.subplots(figsize=(10, 5))
 ax.bar(stocks["Kit"], stocks["Quantidade"], color='skyblue')
 ax.set_title(f"Quantidade de Reagentes por Kit - {selected_equipment}")
 ax.set_xlabel("Kit")
@@ -77,7 +80,7 @@ plt.xticks(rotation=45)
 st.pyplot(fig)
 
 # Exportar tabela e gráfico para PDF
-st.subheader("Exportar Relatório em PDF")
+st.subheader("📄 Exportar Relatório em PDF")
 
 def generate_pdf(dataframe, equipment_name, fig):
     pdf = FPDF()
@@ -103,6 +106,7 @@ def generate_pdf(dataframe, equipment_name, fig):
         pdf.cell(90, 10, kit, 1, 0, "L", True)
         pdf.cell(40, 10, str(quantidade), 1, 1, "C", True)
     
+    pdf.ln(10)
     img_buffer = BytesIO()
     fig.savefig(img_buffer, format='png')
     img_buffer.seek(0)
@@ -116,6 +120,6 @@ def generate_pdf(dataframe, equipment_name, fig):
 if st.button("Baixar PDF"):
     pdf_data = generate_pdf(stocks, selected_equipment, fig)
     st.download_button(
-        "Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
+        "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
     )
 
