@@ -9,7 +9,7 @@ import tempfile
 # Lista inicial de reagentes para cada equipamento
 reagents_dict = {
     "Illumina": ["P1 300", "P1 600", "P2 200", "P2 300", "P2 600", "P3 200", "P3 300", "P4 200", "P4 300", "Next500"],
-    "PacBio": ["SMRT Cell 8M", "Sequel Binding Kit", "Sequencing Primer", "Clean-up Beads", "MagBeads", "DNA Prep Kit"]
+    "PacBio": ["SMRT Cell 8M", "Sequel II Binding Kit 3.2", "Sequel II sequencing Kit 2.0", "DNA Prep Kit 3.0"]
 }
 
 # Função para carregar os dados do CSV ou criar um novo
