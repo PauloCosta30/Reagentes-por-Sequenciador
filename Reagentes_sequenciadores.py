@@ -73,13 +73,13 @@ if st.button("Adicionar Unidades"):
     except Exception as e:
         st.error(f"Ocorreu um erro ao adicionar unidades: {e}")
 
-# Gráfico de barras para visualização
-st.subheader(f"📈 Gráfico de Quantidade por Kit - {selected_equipment}")
+# Gráfico de barras para frequência de uso dos kits
+st.subheader(f"📊 Gráfico de Frequência por Kit - {selected_equipment}")
 fig, ax = plt.subplots(figsize=(10, 5))
-ax.bar(stocks["Kit"], stocks["Quantidade"], color=['#FFC1C1', '#FFD700', '#C1FFC1', '#87CEFA', '#FFA07A', '#9370DB', '#C0C0C0'])
-ax.set_title(f"Quantidade de Reagentes por Kit - {selected_equipment}")
+ax.bar(usage_history["Kit"], usage_history["Frequencia"], color='cornflowerblue', edgecolor='black')
+ax.set_title(f"Frequência de Uso dos Kits - {selected_equipment}")
 ax.set_xlabel("Kit")
-ax.set_ylabel("Quantidade")
+ax.set_ylabel("Frequência")
 plt.xticks(rotation=45)
 st.pyplot(fig)
 
