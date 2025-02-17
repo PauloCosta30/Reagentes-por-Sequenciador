@@ -87,6 +87,30 @@ st.subheader("📊 Total de Reagentes")
 total_reagents = stocks["Quantidade"].sum()
 st.metric(label=f"Quantidade total de reagentes para {selected_equipment}", value=total_reagents)
 
+# Permitir adicionar unidades manualmente
+st.subheader(f"➕ Adicionar Unidades - {selected_equipment}")
+selected_kit_update = st.selectbox("Selecione o kit para adicionar unidades", stocks["Kit"].tolist(), key="update")
+units_to_add = st.number_input("Quantidade a adicionar", min_value=1, step=1, key="add")
+
+if st.button("Adicionar Unidades"):
+    try:
+        index_update = stocks[stocks["Kit"] == selected_kit_update].index[0]
+        stocks.loc[index_update, "Quantidade"] += units_to_add
+        save_data(selected_equipment, stocks)
+        st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
+    except Exception as e:
+        st.error(f"Ocorreu um erro ao adicionar unidades: {e}")
+
+# Gráfico de barras para frequência de uso dos kits
+st.subheader(f"📊 Gráfico de Frequência por Kit - {selected_equipment}")
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.bar(usage_history["Kit"], usage_history["Frequencia"], color='cornflowerblue', edgecolor='black')
+ax.set_title(f"Frequência de Uso dos Kits - {selected_equipment}")
+ax.set_xlabel("Kit")
+ax.set_ylabel("Frequência")
+plt.xticks(rotation=45)
+st.pyplot(fig)
+
 # Gráfico de barras para frequência de uso dos kits
 st.subheader(f"📊 Gráfico de Frequência por Kit - {selected_equipment}")
 fig, ax = plt.subplots(figsize=(10, 5))
