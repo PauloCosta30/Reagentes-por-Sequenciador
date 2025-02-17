@@ -25,13 +25,16 @@ def save_data(equipment, dataframe):
     file_name = f"{equipment}_reagents.csv"
     dataframe.to_csv(file_name, index=False)
 
-# Função para registrar o histórico de baixas
+# Função para carregar o histórico de baixas
 def load_usage_history(equipment):
     history_file = f"{equipment}_usage_history.csv"
     if os.path.exists(history_file):
-        return pd.read_csv(history_file)
+        history_df = pd.read_csv(history_file)
+        if "Kit" not in history_df.columns or "Frequencia" not in history_df.columns:
+            history_df = pd.DataFrame({"Kit": [], "Frequencia": []})
     else:
-        return pd.DataFrame({"Kit": [], "Frequencia": []})
+        history_df = pd.DataFrame({"Kit": [], "Frequencia": []})
+    return history_df
 
 # Função para salvar o histórico de baixas
 def save_usage_history(equipment, history_dataframe):
@@ -45,11 +48,9 @@ selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBi
 
 # Carregar os dados do equipamento selecionado
 stocks = load_data(selected_equipment)
-
-# Carregar o histórico de baixas
 usage_history = load_usage_history(selected_equipment)
 
-# Mostrar o estoque atual com estilo melhorado
+# Mostrar o estoque atual
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
 st.dataframe(stocks, use_container_width=True, height=300)
 
@@ -68,7 +69,8 @@ if st.button("Dar Baixa"):
             if selected_kit in usage_history["Kit"].values:
                 usage_history.loc[usage_history["Kit"] == selected_kit, "Frequencia"] += 1
             else:
-                usage_history = usage_history.append({"Kit": selected_kit, "Frequencia": 1}, ignore_index=True)
+                new_row = pd.DataFrame({"Kit": [selected_kit], "Frequencia": [1]})
+                usage_history = pd.concat([usage_history, new_row], ignore_index=True)
             
             # Salvar as alterações
             save_data(selected_equipment, stocks)
@@ -84,20 +86,6 @@ if st.button("Dar Baixa"):
 st.subheader("📊 Total de Reagentes")
 total_reagents = stocks["Quantidade"].sum()
 st.metric(label=f"Quantidade total de reagentes para {selected_equipment}", value=total_reagents)
-
-# Permitir adicionar unidades manualmente
-st.subheader(f"➕ Adicionar Unidades - {selected_equipment}")
-selected_kit_update = st.selectbox("Selecione o kit para adicionar unidades", stocks["Kit"].tolist(), key="update")
-units_to_add = st.number_input("Quantidade a adicionar", min_value=1, step=1, key="add")
-
-if st.button("Adicionar Unidades"):
-    try:
-        index_update = stocks[stocks["Kit"] == selected_kit_update].index[0]
-        stocks.loc[index_update, "Quantidade"] += units_to_add
-        save_data(selected_equipment, stocks)
-        st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
-    except Exception as e:
-        st.error(f"Ocorreu um erro ao adicionar unidades: {e}")
 
 # Gráfico de barras para frequência de uso dos kits
 st.subheader(f"📊 Gráfico de Frequência por Kit - {selected_equipment}")
