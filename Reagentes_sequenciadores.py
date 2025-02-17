@@ -25,6 +25,19 @@ def save_data(equipment, dataframe):
     file_name = f"{equipment}_reagents.csv"
     dataframe.to_csv(file_name, index=False)
 
+# Função para registrar o histórico de baixas
+def load_usage_history(equipment):
+    history_file = f"{equipment}_usage_history.csv"
+    if os.path.exists(history_file):
+        return pd.read_csv(history_file)
+    else:
+        return pd.DataFrame({"Kit": [], "Frequencia": []})
+
+# Função para salvar o histórico de baixas
+def save_usage_history(equipment, history_dataframe):
+    history_file = f"{equipment}_usage_history.csv"
+    history_dataframe.to_csv(history_file, index=False)
+
 st.title("📊 Controle de Reagentes por Equipamento")
 
 # Seleção do equipamento
@@ -32,6 +45,9 @@ selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBi
 
 # Carregar os dados do equipamento selecionado
 stocks = load_data(selected_equipment)
+
+# Carregar o histórico de baixas
+usage_history = load_usage_history(selected_equipment)
 
 # Mostrar o estoque atual com estilo melhorado
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
@@ -47,7 +63,17 @@ if st.button("Dar Baixa"):
         index = stocks[stocks["Kit"] == selected_kit].index[0]
         if stocks.loc[index, "Quantidade"] >= amount_to_deduct:
             stocks.loc[index, "Quantidade"] -= amount_to_deduct
+
+            # Atualizar o histórico de baixas
+            if selected_kit in usage_history["Kit"].values:
+                usage_history.loc[usage_history["Kit"] == selected_kit, "Frequencia"] += 1
+            else:
+                usage_history = usage_history.append({"Kit": selected_kit, "Frequencia": 1}, ignore_index=True)
+            
+            # Salvar as alterações
             save_data(selected_equipment, stocks)
+            save_usage_history(selected_equipment, usage_history)
+
             st.success(f"{amount_to_deduct} unidades removidas do kit {selected_kit}.")
         else:
             st.error(f"Quantidade insuficiente no kit {selected_kit}.")
