@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "estoque-447521",
+  "private_key_id": "1ee478d0176bb8339659b00b0b438c940c552b62",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDA9vSun0qor/4S\nXiiJtFOjjM6Ld1fcu/gK7eCgQzR4VJXnxB4qY1jLOmFKexTZvHIYZ8juBQ7GjjrH\nRCxcIPFKzuOdmQnMxpst4EjS4F95CRTSiYw0QKGoJTFYYH7tKE/11EkXZriHK6yl\n5N9CIs4fVIQ8MS2lPMtpCSSLUb1sqTdmuIUgiGlPsckdSE9+tezefktsF1b3R1vj\nWXIroByAbfdd0MObnxT53orv4QRO9gfCTykodi1IE89iquZvwmLFhyYey0lUlSjV\nfhHna8WOOSQtla1O+aOkxduAW7k1k3VCbHHsAphHCiLhyXc5jhtIcB8L6nfRWsW8\nGtO0o58dAgMBAAECggEAA6WHGTe0avyscf9qh7OrMveJvbP7KpY4yUgWiyDKAI4k\nqRUZNtbayjhnt0cdLUI068YmU20wCsuMS9C7f+A1fyLqxUMrnr2QGC1ZYvbPhxOH\nW7Uyu5gPFgTh6lgkfenZnP0uhm0wBonqQNZS68aJm6j2uMZ7JNjBxVHhaWqZiFCf\n2vrAW1Pdg53iNorALTbQBbjbaVhICc0rxn9/SQhB5vkycYkDbip3iRkc3+QOR9wr\nGn6fIbyYGRlJQncBLm/Urpp/ty+9nz/chzSRFzExT1Z499Wk/vP6fmJ9DWY//aCw\nv4RBA1Iyfxg+96ZBJ1N/uXzqNEHljVzzwMKCdh1jdwKBgQD/DGBT/e8d9oo74JNE\nzJQIWX38jg1xIn7YIJvFWetPoBHf2GVmMD+5FxWOSB0du2m14JhUUIa0vWCLMgYh\nPpodPms0hdQAAXekM9hMQThnUc/JOxQPo/KYA/vDzH44lFACxNEIy+NnXVIUz/8i\n6sCA/M+OmLRibvyMi//q9RTG6wKBgQDBr0bc401dO06nTAK3Zv+ieJ/AM5LCKHRE\nlBLHEG5ukp6QSk/HAcTpQaFownGzidf67hHbfLu57EmRV1h3lnBIVPJUrDLAsmh+\nUC/+isEPyVLdanktGU7ioEa/J3PMGfCV5a5RVtq1Cc+bKj0W5pgOducCg4UVOinn\nZMJ/nWFAFwKBgAYaJbPcv3vYCjakiOF8g44vlfQU8f1i9eX14cQ3AopFKihQ5Rws\ny1mCU+Gzl/6+HSlc1kguJQrt/QFXkQ36kXVhqO74xLm7T0F+fA5XASJ3sqD96Nz2\n7zbz4XIt0ldINSHb06SCPE6czPnygAg11aVAZzbiMG6qeSBjuRvGAVlBAoGANimk\n4Gp0HQlTwncAH3efLzkaO25wsPkNIoxh/+b5atR3oRQW4Sj+fthKofgWQcXfbx2a\nQs3L1X9dR1ast6yLM78FkWYiPz7k98XG1iDJQnfjQ2XeAx2bsMZvYk9PE5mBbPmw\n2LA4Mv5OXy7drITJqunXSh2rXrdINpw3w+Yn5vsCgYBRoHt8QdSggZXk1k6w980+\nrCPSFq9SwRH5JunoHfXP5kyYTeTsH91LETNMz9K6LKgykRpCk4EAE0gMzcn/0eM5\n5er1gWGK3kUWFa3QdHecotNtSzbtbVxDdTyv+fRGKxNTlhEEDRPaxU/J8SOJvXPW\n8f5sowa4tScryBltTI2+Rg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "estoque-sequenciadores@estoque-447521.iam.gserviceaccount.com",
+  "client_id": "106103437770328960631",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/estoque-sequenciadores%40estoque-447521.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
