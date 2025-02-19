@@ -5,6 +5,8 @@ from fpdf import FPDF
 import matplotlib.pyplot as plt
 import os
 import tempfile
+import gspread
+from google.oauth2.service_account import Credentials
 
 # Lista inicial de reagentes para cada equipamento
 reagents_dict = {
@@ -12,34 +14,44 @@ reagents_dict = {
     "PacBio": ["SMRT Cell 8M", "Sequel II Binding Kit 3.2", "Sequencing II Sequencing Kit 2.0", "Smrtbell Prep Kit 3.0"]
 }
 
-# Função para carregar os dados do CSV ou criar um novo
-def load_data(equipment):
-    file_name = f"{equipment}_reagents.csv"
-    if os.path.exists(file_name):
-        return pd.read_csv(file_name)
-    else:
-        return pd.DataFrame({"Kit": reagents_dict[equipment], "Quantidade": [0] * len(reagents_dict[equipment])})
+# Função para configurar o Google Sheets
+def authenticate_google_sheets():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_file('estoque-447521-1ee478d0176b.json', scopes=scope)
+    client = gspread.authorize(creds)
+    return client
 
-# Função para salvar os dados no CSV
-def save_data(equipment, dataframe):
-    file_name = f"{equipment}_reagents.csv"
-    dataframe.to_csv(file_name, index=False)
+# Função para carregar dados do Google Sheets
+def load_data_from_google_sheets(equipment):
+    client = authenticate_google_sheets()
+    sheet = client.open("Estoque-sequenciamento").worksheet(equipment)
+    data = pd.DataFrame(sheet.get_all_records())
+    if data.empty:
+        data = pd.DataFrame({"Kit": reagents_dict[equipment], "Quantidade": [0] * len(reagents_dict[equipment])})
+    return data
+
+# Função para salvar os dados no Google Sheets
+def save_data_to_google_sheets(equipment, dataframe):
+    client = authenticate_google_sheets()
+    sheet = client.open("Estoque-sequenciamento").worksheet(equipment)
+    sheet.clear()  # Limpa a planilha existente antes de salvar
+    sheet.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
 
 # Função para carregar o histórico de baixas
-def load_usage_history(equipment):
-    history_file = f"{equipment}_usage_history.csv"
-    if os.path.exists(history_file):
-        history_df = pd.read_csv(history_file)
-        if "Kit" not in history_df.columns or "Frequencia" not in history_df.columns:
-            history_df = pd.DataFrame({"Kit": [], "Frequencia": []})
-    else:
+def load_usage_history_from_google_sheets(equipment):
+    client = authenticate_google_sheets()
+    sheet = client.open("Estoque-sequenciamento").worksheet(f"{equipment}_history")
+    history_df = pd.DataFrame(sheet.get_all_records())
+    if history_df.empty:
         history_df = pd.DataFrame({"Kit": [], "Frequencia": []})
     return history_df
 
 # Função para salvar o histórico de baixas
-def save_usage_history(equipment, history_dataframe):
-    history_file = f"{equipment}_usage_history.csv"
-    history_dataframe.to_csv(history_file, index=False)
+def save_usage_history_to_google_sheets(equipment, history_dataframe):
+    client = authenticate_google_sheets()
+    sheet = client.open("Estoque-sequenciamento").worksheet(f"{equipment}_history")
+    sheet.clear()  # Limpa a planilha existente antes de salvar
+    sheet.update([history_dataframe.columns.values.tolist()] + history_dataframe.values.tolist())
 
 st.title("📊 Controle de Reagentes por Equipamento")
 
@@ -47,8 +59,8 @@ st.title("📊 Controle de Reagentes por Equipamento")
 selected_equipment = st.selectbox("Selecione o Equipamento", ["Illumina", "PacBio"])
 
 # Carregar os dados do equipamento selecionado
-stocks = load_data(selected_equipment)
-usage_history = load_usage_history(selected_equipment)
+stocks = load_data_from_google_sheets(selected_equipment)
+usage_history = load_usage_history_from_google_sheets(selected_equipment)
 
 # Mostrar o estoque atual
 st.subheader(f"📦 Estoque Atual - {selected_equipment}")
@@ -73,8 +85,8 @@ if st.button("Dar Baixa"):
                 usage_history = pd.concat([usage_history, new_row], ignore_index=True)
             
             # Salvar as alterações
-            save_data(selected_equipment, stocks)
-            save_usage_history(selected_equipment, usage_history)
+            save_data_to_google_sheets(selected_equipment, stocks)
+            save_usage_history_to_google_sheets(selected_equipment, usage_history)
 
             st.success(f"{amount_to_deduct} unidades removidas do kit {selected_kit}.")
         else:
@@ -96,7 +108,7 @@ if st.button("Adicionar Unidades"):
     try:
         index_update = stocks[stocks["Kit"] == selected_kit_update].index[0]
         stocks.loc[index_update, "Quantidade"] += units_to_add
-        save_data(selected_equipment, stocks)
+        save_data_to_google_sheets(selected_equipment, stocks)
         st.success(f"{units_to_add} unidades adicionadas ao kit {selected_kit_update}.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao adicionar unidades: {e}")
@@ -157,3 +169,4 @@ if st.button("Baixar PDF"):
         st.download_button(
             "📥 Clique para baixar o PDF", data=pdf_data, file_name=f"controle_reagentes_{selected_equipment}.pdf", mime="application/pdf"
         )
+
