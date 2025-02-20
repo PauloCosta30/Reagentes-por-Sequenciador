@@ -17,7 +17,7 @@ reagents_dict = {
 # Função para configurar o Google Sheets
 def authenticate_google_sheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_file('estoque-447521-1ee478d0176b.json', scopes=scope)
+    creds = Credentials.from_service_account_file('estoque-447521-76ebf1df2b27', scopes=scope)
     client = gspread.authorize(creds)
     return client
 
